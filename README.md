@@ -1,13 +1,14 @@
 # 📊 Sistema de Gestão Escolar
 
-Sistema web desenvolvido com HTML, CSS e JavaScript para gerenciamento de alunos.
+Sistema web desenvolvido com JavaScript para gerenciamento de alunos, cálculo de médias e análise de desempenho.
 
 ## 🚀 Funcionalidades
 - Cadastro de alunos
-- Cálculo de médias
-- Status automático
-- Estatísticas
+- Cálculo automático de média
+- Classificação (Aprovado, Recuperação, Reprovado)
+- Remoção de alunos
+- Estatísticas (média geral e melhor aluno)
 - Armazenamento local (localStorage)
 
 ## 🌐 Acesse o projeto
-(coloque aqui o link depois)
+https://edsonandrade-pc.github.io/Sistema-de-Gest-o-Escolar/
