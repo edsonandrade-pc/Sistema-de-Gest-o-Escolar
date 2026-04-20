@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Gestão Escolar</title>
+
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  justify-content: center;
+  padding: 30px;
+}
+
+.container {
+  width: 420px;
+  background: #1e293b;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+}
+
+h2 {
+  text-align: center;
+}
+
+.sub {
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.7;
+  margin-bottom: 15px;
+}
+
+input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #22c55e;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #16a34a;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #334155;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.aprovado { color: #22c55e; }
+.recuperacao { color: #facc15; }
+.reprovado { color: #ef4444; }
+
+.remover {
+  background: #ef4444;
+  border-radius: 6px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.remover:hover {
+  background: #dc2626;
+}
+
+.stats {
+  margin-top: 20px;
+  background: #020617;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.empty {
+  text-align: center;
+  opacity: 0.6;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>📊 Sistema de Gestão Escolar</h2>
+  <p class="sub">Gerencie alunos, notas e desempenho</p>
+
+  <input id="nome" placeholder="Nome do aluno">
+
+  <input class="nota" type="number" placeholder="Nota 1">
+  <input class="nota" type="number" placeholder="Nota 2">
+  <input class="nota" type="number" placeholder="Nota 3">
+  <input class="nota" type="number" placeholder="Nota 4">
+
+  <button onclick="adicionarAluno()">Adicionar aluno</button>
+  <button onclick="limparLista()" style="background:#ef4444;">Limpar lista</button>
+
+  <ul id="lista"></ul>
+
+  <div class="stats">
+    <p id="total"></p>
+    <p id="mediaGeral"></p>
+    <p id="melhorAluno"></p>
+  </div>
+</div>
+
+<script>
+let alunos = JSON.parse(localStorage.getItem("alunos")) || [];
+
+function salvar() {
+  localStorage.setItem("alunos", JSON.stringify(alunos));
+}
+
+function adicionarAluno() {
+  let nome = document.getElementById("nome").value.trim();
+  let inputs = document.querySelectorAll(".nota");
+
+  if (!nome) {
+    alert("Digite o nome do aluno!");
+    return;
+  }
+
+  let soma = 0;
+  let qtd = 0;
+
+  inputs.forEach(input => {
+    if (input.value !== "") {
+      soma += Number(input.value);
+      qtd++;
+    }
+  });
+
+  if (qtd === 0) {
+    alert("Digite pelo menos uma nota!");
+    return;
+  }
+
+  let media = soma / qtd;
+
+  let status = media >= 7 ? "Aprovado" :
+               media >= 5 ? "Recuperação" : "Reprovado";
+
+  alunos.push({
+    nome,
+    media: Number(media.toFixed(2)),
+    status
+  });
+
+  salvar();
+  render();
+  limparCampos();
+}
+
+function removerAluno(i) {
+  alunos.splice(i, 1);
+  salvar();
+  render();
+}
+
+function limparLista() {
+  if (confirm("Deseja apagar todos os alunos?")) {
+    alunos = [];
+    salvar();
+    render();
+  }
+}
+
+function render() {
+  let lista = document.getElementById("lista");
+  lista.innerHTML = "";
+
+  if (alunos.length === 0) {
+    lista.innerHTML = `<p class="empty">Nenhum aluno cadastrado</p>`;
+    atualizarStats();
+    return;
+  }
+
+  alunos.forEach((a, i) => {
+    let classe = a.status === "Aprovado" ? "aprovado" :
+                 a.status === "Recuperação" ? "recuperacao" : "reprovado";
+
+    lista.innerHTML += `
+      <li>
+        <span>${a.nome} - ${a.media} <span class="${classe}">(${a.status})</span></span>
+        <button class="remover" onclick="removerAluno(${i})">X</button>
+      </li>
+    `;
+  });
+
+  atualizarStats();
+}
+
+function atualizarStats() {
+  let total = alunos.length;
+
+  if (total === 0) {
+    document.getElementById("total").innerText = "";
+    document.getElementById("mediaGeral").innerText = "";
+    document.getElementById("melhorAluno").innerText = "";
+    return;
+  }
+
+  let soma = 0;
+  let melhor = alunos[0];
+
+  alunos.forEach(a => {
+    soma += a.media;
+    if (a.media > melhor.media) {
+      melhor = a;
+    }
+  });
+
+  let mediaGeral = soma / total;
+
+  document.getElementById("total").innerText = `Total de alunos: ${total}`;
+  document.getElementById("mediaGeral").innerText = `Média geral: ${mediaGeral.toFixed(2)}`;
+  document.getElementById("melhorAluno").innerText = `Melhor aluno: ${melhor.nome} (${melhor.media})`;
+}
+
+function limparCampos() {
+  document.getElementById("nome").value = "";
+  document.querySelectorAll(".nota").forEach(n => n.value = "");
+  document.getElementById("nome").focus();
+}
+
+render();
+</script>
+
+</body>
+</html>
